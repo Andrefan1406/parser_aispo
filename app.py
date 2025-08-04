@@ -41,12 +41,21 @@ def fetch_all_data():
     for user in users:
         session = requests.Session()
         headers = {'User-Agent': 'Mozilla/5.0'}
-        resp = session.post(auth_url, data=user, headers=headers)
+        try:
+            resp = session.post(auth_url, data=user, headers=headers, timeout=10)
+        except Exception as e:
+            print(f"Ошибка входа для {user['login']}: {e}")
+            continue
+
 
         if "Ситема управления" in resp.text:
             continue  # Пропускаем, если авторизация не удалась
 
-        page = session.get(page_url)
+        try:
+            page = session.get(page_url, timeout=10)
+        except Exception as e:
+            print(f"Ошибка получения страницы для {user['login']}: {e}")
+            continue
         soup = BeautifulSoup(page.text, 'html.parser')
 
         table = soup.find('table')
